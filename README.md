@@ -1,161 +1,99 @@
-# AccuKnox Django Trainee Technical Assignment
+# AccuKnox Django Trainee Assignment
 
-A clean, comprehensive Django project implementing and proving the technical questions for the AccuKnox Django Trainee assessment.
-
----
-
-## Table of Contents
-- [Overview](#overview)
-- [Project Structure](#project-structure)
-- [Setup Instructions](#setup-instructions)
-- [How to Run & Verify](#how-to-run--verify)
-  - [1. Django Signals Demo](#1-django-signals-demo)
-  - [2. Custom Rectangle Class Demo](#2-custom-rectangle-class-demo)
-  - [3. Automated Unit Tests](#3-automated-unit-tests)
-- [Summary of Answers](#summary-of-answers)
-  - [Topic 1: Django Signals](#topic-1-django-signals)
-  - [Topic 2: Custom Classes in Python (`Rectangle`)](#topic-2-custom-classes-in-python-rectangle)
-
----
-
-## Overview
-
-This repository contains clean, modular, and fully tested implementations for both parts of the technical assignment:
-1. **Topic 1: Django Signals**: Conclusive empirical demonstrations and unit tests answering the 3 core questions regarding synchronicity, threading, and database transaction boundaries.
-2. **Topic 2: Custom Python Classes**: A robust `Rectangle` class implementing iterable dimensions (`__iter__`), strict type validation (disallowing non-integers and booleans), and supporting multiple iterations cleanly.
-
----
+Project containing solutions for the AccuKnox Django Trainee technical assignment.
 
 ## Project Structure
 
 ```text
 AccuKnox/
-│
-├── accuknox_assignment/             # Django project configuration
-│   ├── __init__.py
-│   ├── asgi.py
-│   ├── settings.py                  # Project settings (core registered in INSTALLED_APPS)
-│   ├── urls.py
-│   └── wsgi.py
-│
-├── core/                            # Core Django application
-│   ├── management/
-│   │   └── commands/
-│   │       ├── run_rectangle_demo.py  # Management command: Rectangle demo
-│   │       └── run_signals_demo.py    # Management command: Signals demo (Q1, Q2, Q3)
-│   ├── migrations/
-│   │   ├── 0001_initial.py
-│   │   └── __init__.py
-│   ├── apps.py                      # AppConfig connecting signals in ready()
-│   ├── models.py                    # SignalTestModel and SignalLog
-│   ├── rectangle.py                 # Custom Rectangle class with __iter__
-│   ├── signals.py                   # post_save signal receivers for Q1, Q2, Q3
-│   └── tests.py                     # 9 automated unit tests for Topic 1 and Topic 2
-│
-├── .gitignore                       # Git ignore rules (venv, db.sqlite3, cache, etc.)
-├── manage.py                        # Django management script
-├── README.md                        # Documentation and verification guide
-└── requirements.txt                 # Project dependencies
+├── accuknox_assignment/        # Project settings and urls
+├── core/
+│   ├── management/commands/
+│   │   ├── run_signals_demo.py    # Demo for Topic 1 (Signals)
+│   │   └── run_rectangle_demo.py  # Demo for Topic 2 (Rectangle)
+│   ├── models.py                  # Models for testing signals
+│   ├── signals.py                 # post_save signal handlers
+│   ├── rectangle.py               # Custom Rectangle class
+│   └── tests.py                   # Automated tests for signals & Rectangle
+├── manage.py
+├── requirements.txt
+└── README.md
 ```
 
----
+## Setup
 
-## Setup Instructions
+1. **Create and activate a virtual environment:**
+   ```bash
+   # Windows (PowerShell)
+   python -m venv venv
+   .\venv\Scripts\Activate.ps1
 
-### 1. Clone the Repository
-```bash
-git clone <repository-url>
-cd AccuKnox
-```
+   # macOS / Linux
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
 
-### 2. Create and Activate Virtual Environment
-- **Windows (PowerShell):**
-  ```powershell
-  python -m venv venv
-  .\venv\Scripts\Activate.ps1
-  ```
-- **macOS / Linux:**
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Run migrations:**
+   ```bash
+   python manage.py migrate
+   ```
+
+## Running the Demos and Tests
+
+- **Run Signals Demo:**
   ```bash
-  python3 -m venv venv
-  source venv/bin/activate
+  python manage.py run_signals_demo
   ```
 
-### 3. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
+- **Run Rectangle Demo:**
+  ```bash
+  python manage.py run_rectangle_demo
+  ```
 
-### 4. Run Migrations
-```bash
-python manage.py migrate
-```
-
----
-
-## How to Run & Verify
-
-### 1. Django Signals Demo
-Executes 3 sequential demonstrations proving synchronicity, thread identity, and transaction rollback:
-```bash
-python manage.py run_signals_demo
-```
-
-### 2. Custom Rectangle Class Demo
-Demonstrates initializing `Rectangle(10, 5)`, looping through it twice, and list conversion:
-```bash
-python manage.py run_rectangle_demo
-```
-
-### 3. Automated Unit Tests
-Runs the full automated test suite (9 test cases covering signals and rectangle):
-```bash
-python manage.py test
-```
+- **Run Tests:**
+  ```bash
+  python manage.py test
+  ```
 
 ---
 
-## Summary of Answers
+## Answers to Assignment Questions
 
 ### Topic 1: Django Signals
 
-#### Question 1: Are Django signals executed synchronously or asynchronously by default?
-- **Answer:** **Synchronously.**
-- **Proof:**
-  - Inside `question_1_sync_handler` in `core/signals.py`, a `time.sleep(2)` delay is introduced during `post_save`.
-  - In `run_signals_demo.py` and `test_question_1_signals_execute_synchronously`, the caller records start time before `save()` and end time after `save()` completes.
-  - The caller blocks and waits for $\ge 2.0\text{ seconds}$ before resuming execution, proving synchronous execution.
+1. **Are Django signals executed synchronously or asynchronously by default?**
+   - **Answer:** Synchronously.
+   - **Explanation:** When `save()` is called, Django executes all registered receiver functions inline on the current call stack before returning control to the caller. In `core/signals.py`, the signal handler sleeps for 2 seconds (`time.sleep(2)`), and the caller blocks and waits the full 2 seconds before continuing.
 
-#### Question 2: Do Django signals run in the same thread as the caller?
-- **Answer:** **Yes, in the same thread.**
-- **Proof:**
-  - In `question_2_thread_handler`, the signal receiver logs `threading.get_ident()` and `threading.current_thread().name`.
-  - In `run_signals_demo.py` and `test_question_2_signals_run_in_same_thread`, the caller's thread ID and thread name match the signal receiver's thread ID and thread name identically (`MainThread`).
+2. **Do Django signals run in the same thread as the caller?**
+   - **Answer:** Yes.
+   - **Explanation:** In `core/signals.py`, inspecting `threading.get_ident()` and `threading.current_thread().name` inside the receiver yields the exact same thread ID and name (`MainThread`) as the caller.
 
-#### Question 3: By default, do Django signals run in the same database transaction as the caller?
-- **Answer:** **Yes, in the same database transaction.**
-- **Proof:**
-  - In `question_3_transaction_handler`, whenever `SignalTestModel` is saved, the receiver creates a `SignalLog` entry in the database.
-  - In `run_signals_demo.py` and `test_question_3_signals_run_in_same_database_transaction`, `SignalTestModel.objects.create(...)` is executed inside a `with transaction.atomic():` block, followed immediately by an intentional exception (`raise RuntimeError`).
-  - Outside the atomic block, a database query verifies the count of `SignalTestModel` and `SignalLog`. Both counts are `0`, proving that records created by the signal handler reside in the caller's transaction and roll back along with it.
-
----
+3. **By default, do Django signals run in the same database transaction as the caller?**
+   - **Answer:** Yes.
+   - **Explanation:** Signal handlers participate in the active transaction of the caller. In `core/signals.py`, the receiver creates a `SignalLog` entry. When wrapped in a `transaction.atomic()` block that raises an exception, both the parent model instance and the `SignalLog` created in the signal handler roll back together (count is 0).
 
 ### Topic 2: Custom Classes in Python (`Rectangle`)
 
-- **Class Definition (`core/rectangle.py`)**:
-  - Initialized with `Rectangle(length: int, width: int)`.
-  - Enforces strict integer types using `type(...) is not int`, raising a `TypeError` for floats, strings, and booleans (since in Python, `bool` inherits from `int`).
-  - Implements `__iter__(self)` using generator `yield` statements, yielding `{'length': self.length}` first and `{'width': self.width}` second.
-  - Supports repeated iterations over the same instance without exhausting state.
+The `Rectangle` class in `core/rectangle.py`:
+- Accepts `length` and `width` as integers.
+- Strictly validates types using `type(val) is not int`, raising a `TypeError` for floats, strings, and booleans (since `isinstance(True, int)` is `True` in Python).
+- Implements `__iter__` to yield `{'length': self.length}` first and `{'width': self.width}` second.
+- Uses a generator in `__iter__` so the instance can be iterated over multiple times.
 
-- **Sample Output**:
-  ```python
-  rect = Rectangle(10, 5)
+**Example usage:**
+```python
+rect = Rectangle(10, 5)
 
-  for item in rect:
-      print(item)
+for item in rect:
+    print(item)
 
-  # Output:
-  # {'length': 10}
-  # {'width': 5}
-  ```
+# Output:
+# {'length': 10}
+# {'width': 5}
+```
